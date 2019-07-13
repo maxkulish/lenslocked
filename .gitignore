@@ -140,6 +140,9 @@ lenslocked
 .idea/**/dbnavigator.xml
 .idea
 
+# Ignore tmp folder
+tmp/
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
