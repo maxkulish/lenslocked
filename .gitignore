@@ -143,6 +143,9 @@ lenslocked
 # Ignore tmp folder
 tmp/
 
+# Ignore vendor folder
+vendor
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries

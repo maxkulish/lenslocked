@@ -26,6 +26,7 @@ func faq(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func notFound404(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusNotFound)
 	_, _ = fmt.Fprint(w, "I can't find this page")
 }
 
