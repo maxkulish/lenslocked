@@ -2,26 +2,30 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 )
 
-func home(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+var (
+	homeTemplate    *template.Template
+	contactTemplate *template.Template
+)
+
+func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	_, _ = fmt.Fprint(w, "<h1>Welcome to my awesome site!</h1>")
+	if err := homeTemplate.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func contact(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func contact(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	_, _ = fmt.Fprint(w, "To get in touch, please send an email to <"+
-		"a href=\"mailto:m@example.com\">m@example.com")
-}
-
-func faq(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	w.Header().Set("Content-Type", "text/html")
-	_, _ = fmt.Fprint(w, "<h1>This is my FAQ page</h1>")
-
+	if err := contactTemplate.Execute(w, nil); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func notFound404(w http.ResponseWriter, r *http.Request) {
@@ -31,13 +35,23 @@ func notFound404(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	r := httprouter.New()
-	r.GET("/", home)
-	r.GET("/contact", contact)
-	r.GET("/faq", faq)
+	var err error
+	homeTemplate, err = template.ParseFiles("views/home.gohtml")
+	if err != nil {
+		log.Fatal("Can't read gohtml template. Error: ", err)
+	}
+
+	contactTemplate, err = template.ParseFiles("views/contact.gohtml")
+	if err != nil {
+		log.Fatal("Can't read gohtml template. Error: ", err)
+	}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/", home)
+	r.HandleFunc("/contact", contact)
 
 	handler404 := http.HandlerFunc(notFound404)
-	r.NotFound = handler404
+	r.NotFoundHandler = handler404
 
 	_ = http.ListenAndServe(":3000", r)
 }
