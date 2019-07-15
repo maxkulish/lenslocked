@@ -3,6 +3,7 @@ package views
 import (
 	"html/template"
 	"log"
+	"net/http"
 	"path/filepath"
 )
 
@@ -14,6 +15,11 @@ const (
 type View struct {
 	Template *template.Template
 	Layout   string
+}
+
+// Render is userd to render the view with the predefined layout
+func (v *View) Render(w http.ResponseWriter, data interface{}) error {
+	return v.Template.ExecuteTemplate(w, v.Layout, data)
 }
 
 func NewView(layout string, files ...string) *View {
