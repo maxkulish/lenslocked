@@ -1,0 +1,34 @@
+<h1>Hello, {{.Name}}</h1>
+
+<h2>My dog name {{.Dog.Name}}</h2>
+
+<p>
+    Int: {{.Int}}
+</p>
+
+<p>
+    Float: {{.Float}}
+</p>
+
+<p>
+    Slice: {{.Slice}}
+</p>
+
+<pre>
+    Map: {{.Map}}
+</pre>
+
+<script>
+    var m = {{.Map}}
+</script>
+
+{{range .Slice}}
+    <b>Slice item: {{.}}</b>
+{{end}}
+
+{{range $key, $val := .Map}}
+    <p>
+        Key: {{ $key }}
+        Value: {{ $val }}
+    </p>
+{{end}}
