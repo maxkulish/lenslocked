@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"html/template"
+	"lenslocked/views"
 	"log"
 	"net/http"
 
@@ -10,20 +10,20 @@ import (
 )
 
 var (
-	homeTemplate    *template.Template
-	contactTemplate *template.Template
+	homeView    *views.View
+	contactView *views.View
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := homeTemplate.Execute(w, nil); err != nil {
+	if err := homeView.Template.Execute(w, nil); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func contact(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := contactTemplate.Execute(w, nil); err != nil {
+	if err := contactView.Template.Execute(w, nil); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -35,16 +35,9 @@ func notFound404(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	var err error
-	homeTemplate, err = template.ParseFiles("views/home.gohtml")
-	if err != nil {
-		log.Fatal("Can't read gohtml template. Error: ", err)
-	}
 
-	contactTemplate, err = template.ParseFiles("views/contact.gohtml")
-	if err != nil {
-		log.Fatal("Can't read gohtml template. Error: ", err)
-	}
+	homeView = views.NewView("views/home.gohtml")
+	contactView = views.NewView("views/contact.gohtml")
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", home)
