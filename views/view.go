@@ -14,6 +14,7 @@ func NewView(layout string, files ...string) *View {
 	files = append(files,
 		"views/layouts/bootstrap.gohtml",
 		"views/layouts/footer.gohtml",
+		"views/layouts/navbar.gohtml",
 	)
 
 	t, err := template.ParseFiles(files...)
