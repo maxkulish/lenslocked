@@ -35,7 +35,6 @@ func notFound404(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	homeView = views.NewView("bootstrap", "views/home.gohtml")
 	contactView = views.NewView("bootstrap", "views/contact.gohtml")
 
