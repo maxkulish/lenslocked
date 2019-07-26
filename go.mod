@@ -4,5 +4,5 @@ go 1.12
 
 require (
 	github.com/gorilla/mux v1.7.3
-	github.com/julienschmidt/httprouter v1.2.0 // indirect
+	github.com/gorilla/schema v1.1.0
 )
