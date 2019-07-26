@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	layoutDir   string = "views/layouts/"
-	TemplateExt string = "*.gohtml"
+	LayoutDir   string = "views/layouts/"
+	TemplateExt string = ".gohtml"
+	TemplateDir string = "views/"
 )
 
 type View struct {
@@ -31,7 +32,10 @@ func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func NewView(layout string, files ...string) *View {
 
-	files = append(files, layoutFiles(layoutDir+TemplateExt)...)
+	addTemplatePath(files)
+	addTemplateExt(files)
+
+	files = append(files, layoutFiles(LayoutDir+"*"+TemplateExt)...)
 
 	t, err := template.ParseFiles(files...)
 	if err != nil {
@@ -53,4 +57,21 @@ func layoutFiles(path string) []string {
 	}
 
 	return layouts
+}
+
+// addTemplatePath takes in a slice of strings
+// representing file paths for templates, and it prepends
+// the TemplateDir directory to each string in the slice
+//
+// Eg the in {"home"} wold result in the output
+func addTemplatePath(files []string) {
+	for i, f := range files {
+		files[i] = TemplateDir + f
+	}
+}
+
+func addTemplateExt(files []string) {
+	for i, f := range files {
+		files[i] = f + TemplateExt
+	}
 }
