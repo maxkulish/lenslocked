@@ -143,6 +143,9 @@ lenslocked
 # Ignore tmp folder
 tmp/
 
+# Config with credentials
+config.yaml
+
 # Ignore vendor folder
 vendor
 
