@@ -9,6 +9,8 @@ import (
 	"lenslocked/models"
 )
 
+const env = "dev"
+
 type DB struct {
 	Host     string `yaml:"host"`
 	Database string `yaml:"database"`
@@ -60,18 +62,43 @@ func createOrder(db *gorm.DB, user User, amount int, desc string) {
 
 func main() {
 
-	us, err := models.NewUserService()
+	us, err := models.NewUserService(env)
 	if err != nil {
 		panic(err)
 	}
 	defer us.DB.Close()
 
-	//us.FullReset()
+	us.FullReset()
 	us.DB.AutoMigrate(&User{})
 
-	user, err := us.ByID(2)
+	user := models.User{
+		Name:  "Michael Scott",
+		Email: "mich@gmail.com",
+	}
+
+	if err := us.Create(&user); err != nil {
+		panic(err)
+	}
+
+	user.Email = "new.mich@gmail.com"
+	if err := us.Update(&user); err != nil {
+		panic(err)
+	}
+
+	userByID, err := us.ByID(1)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(user)
+	fmt.Println(userByID)
+
+	if err := us.Delete(user.ID); err != nil {
+		panic(err)
+	}
+
+	userByEmail, err := us.ByEmail("new.mich@gmail.com")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(userByEmail)
+
 }

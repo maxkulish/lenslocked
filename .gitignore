@@ -123,6 +123,7 @@ venv.bak/
 
 # Don't include our binary
 lenslocked
+go_build_lenslocked_exp
 
 # User-specific stuff
 .idea/**/workspace.xml
