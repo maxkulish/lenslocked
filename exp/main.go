@@ -6,6 +6,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"lenslocked/models"
 )
 
 type DB struct {
@@ -59,38 +60,18 @@ func createOrder(db *gorm.DB, user User, amount int, desc string) {
 
 func main() {
 
-	var d DB
-	d.loadConf("/Users/mk/Code/lenslocked/config.yaml")
-
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		d.Host, d.Port, d.User, d.Password, d.Database)
-
-	db, err := gorm.Open("postgres", psqlInfo)
+	us, err := models.NewUserService()
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
-	if err := db.DB().Ping(); err != nil {
+	defer us.DB.Close()
+
+	//us.FullReset()
+	us.DB.AutoMigrate(&User{})
+
+	user, err := us.ByID(2)
+	if err != nil {
 		panic(err)
 	}
-
-	db.LogMode(true)
-	db.AutoMigrate(&User{})
-	db.AutoMigrate(&Order{})
-
-	var u User
-	if err := db.Preload("Orders").First(&u, "id = ?", 4).Error; err != nil {
-		panic(err)
-	}
-	//createOrder(db, u, 101, "Fake description #1")
-	//createOrder(db, u, 9999, "Fake description #2")
-	//createOrder(db, u, 6666, "Fake description #3")
-
-	if db.RecordNotFound() {
-		fmt.Println("no user found!")
-	} else if db.Error != nil {
-		panic(db.Error)
-	}
-	fmt.Println(u)
-
+	fmt.Println(user)
 }
