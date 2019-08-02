@@ -69,7 +69,18 @@ func (us *UserService) Delete(id uint) error {
 	return us.DB.Delete(&user).Error
 }
 
-func (us *UserService) FullReset() {
-	us.DB.DropTableIfExists(&User{})
-	us.DB.AutoMigrate(&User{})
+func (us *UserService) FullReset() error {
+	if err := us.DB.DropTableIfExists(&User{}).Error; err != nil {
+		return err
+	}
+	return us.AutoMigrate()
+}
+
+// AutoMigrate will attempt to automatically migrate the users table
+func (us *UserService) AutoMigrate() error {
+	if err := us.DB.AutoMigrate(&User{}).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

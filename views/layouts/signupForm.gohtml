@@ -1,6 +1,10 @@
 {{define "signupForm"}}
 <form action="/signup" method="POST">
   <div class="form-group">
+
+    <label for="Name">Full Name</label>
+    <input type="text" name="name" class="form-control" id="name" aria-describedby="nameHelp" placeholder="Enter your full name">
+    <small id="nameHelp" class="form-text text-muted">Your name is our secret</small>
     <label for="Email">Email address</label>
     <input type="email" name="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
     <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
