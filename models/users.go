@@ -8,6 +8,8 @@ import (
 	"lenslocked/database"
 )
 
+const userPWPepper = "k$cUXbp!WY&vfGyhY64#UdeGesqz"
+
 type User struct {
 	gorm.Model
 	Name         string `gorm:"index:user_name"`
@@ -54,8 +56,10 @@ func (us *UserService) ByEmail(email string) (*User, error) {
 
 // Create will create the provided user
 func (us *UserService) Create(user *User) error {
+	// Add pepper to the user password
+	pwBytes := []byte(user.Password + userPWPepper)
 	// Hashing without validation
-	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
