@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"golang.org/x/crypto/bcrypt"
 	"lenslocked/database"
 )
 
 type User struct {
 	gorm.Model
-	Name  string `gorm:"index:user_name"`
-	Email string `gorm:"not null;unique_index:user_email"`
+	Name         string `gorm:"index:user_name"`
+	Email        string `gorm:"not null;unique_index:user_email"`
+	Password     string `gorm:"-"`
+	PasswordHash string `gorm:"not null"`
 }
 
 type UserService struct {
@@ -51,6 +54,14 @@ func (us *UserService) ByEmail(email string) (*User, error) {
 
 // Create will create the provided user
 func (us *UserService) Create(user *User) error {
+	// Hashing without validation
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedBytes)
+	// Clear raw password from log, memory etc.
+	user.Password = ""
 	return us.DB.Create(user).Error
 }
 

@@ -50,5 +50,5 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _ = fmt.Fprintln(w, form)
+	_, _ = fmt.Fprintln(w, user)
 }
