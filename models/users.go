@@ -54,6 +54,25 @@ func (us *UserService) ByEmail(email string) (*User, error) {
 	return &user, err
 }
 
+func (us *UserService) Authenticate(email, password string) (*User, error) {
+	foundUser, err := us.ByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+userPWPepper))
+	if err != nil {
+		switch err {
+		case bcrypt.ErrMismatchedHashAndPassword:
+			return nil, database.ErrInvalidPass
+		default:
+			return nil, err
+		}
+	}
+
+	return foundUser, nil
+}
+
 // Create will create the provided user
 func (us *UserService) Create(user *User) error {
 	// Add pepper to the user password

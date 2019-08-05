@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"lenslocked/database"
 	"lenslocked/models"
 	"lenslocked/views"
 	"net/http"
@@ -20,8 +21,8 @@ type SignupForm struct {
 }
 
 type LoginForm struct {
-	Pass  string `schema:"password"`
 	Email string `schema:"email"`
+	Pass  string `schema:"password"`
 }
 
 func NewUser(us *models.UserService) *Users {
@@ -49,8 +50,9 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := models.User{
-		Name:  form.Name,
-		Email: form.Email,
+		Name:     form.Name,
+		Email:    form.Email,
+		Password: form.Pass,
 	}
 	if err := u.us.Create(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -69,6 +71,16 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintln(w, form)
+	user, err := u.us.Authenticate(form.Email, form.Pass)
+	switch err {
+	case database.ErrNotFound:
+		_, _ = fmt.Fprintln(w, "Invalid email address.")
+	case database.ErrInvalidPass:
+		_, _ = fmt.Fprintln(w, "Invalid password provided")
+	case nil:
+		_, _ = fmt.Fprintln(w, user)
+	default:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 }

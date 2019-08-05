@@ -17,8 +17,9 @@ const (
 var (
 	// ErrNotFound is returned when a resource cannot be found
 	// in the database
-	ErrNotFound  = errors.New("models: resource not found")
-	ErrInvalidID = errors.New("models: ID provided was invalid")
+	ErrNotFound    = errors.New("models: resource not found")
+	ErrInvalidID   = errors.New("models: ID provided was invalid")
+	ErrInvalidPass = errors.New("models: incorrect password provided")
 )
 
 type Config struct {
