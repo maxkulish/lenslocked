@@ -14,12 +14,13 @@ func testingUserService() (*UserService, error) {
 	}
 	us.DB.LogMode(false)
 
-	us.FullReset()
+	err = us.FullReset()
 	us.DB.AutoMigrate(&User{})
-	return us, nil
+	return us, err
 }
 
 func TestCreateUserService(t *testing.T) {
+
 	us, err := testingUserService()
 	if err != nil {
 		t.Fatal(err)
