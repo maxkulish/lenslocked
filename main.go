@@ -24,6 +24,7 @@ func main() {
 	}
 	defer us.DB.Close()
 
+	//err = us.FullReset()
 	err = us.AutoMigrate()
 	if err != nil {
 		panic(err)

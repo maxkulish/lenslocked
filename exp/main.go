@@ -1,21 +1,36 @@
 package main
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
-	"lenslocked/hash"
+	"lenslocked/models"
 )
 
 func main() {
-	toHash := []byte("This is my string to hash")
-	h := hmac.New(sha256.New, []byte("my-secret-key"))
-	h.Write(toHash)
-	b := h.Sum(nil)
-	fmt.Println(base64.URLEncoding.EncodeToString(b))
-	h.Reset()
 
-	myhmac := hash.NewHMAC("my-secret-key")
-	fmt.Println(myhmac.Hash("This is my string to hash"))
+	us, err := models.NewUserService("dev")
+	if err != nil {
+		panic(err)
+	}
+	defer us.DB.Close()
+	us.AutoMigrate()
+
+	user := models.User{
+		Name:     "Max Kul",
+		Email:    "max@g.com",
+		Password: "1234",
+		Remember: "abc1234",
+	}
+
+	err = us.Create(&user)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%+v\n", user)
+
+	user2, err := us.ByRemember("abc1234")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%+v\n", *user2)
 }
