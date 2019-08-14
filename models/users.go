@@ -15,6 +15,16 @@ const (
 	hmacSecretKey = "ujY4n%wnUBD#cAyQh4VXqJk*imr"
 )
 
+type User struct {
+	gorm.Model
+	Name         string `gorm:"index:user_name"`
+	Email        string `gorm:"not null;unique_index:user_email"`
+	Password     string `gorm:"-"`
+	PasswordHash string `gorm:"not null"`
+	Remember     string `gorm:"-"`
+	RememberHash string `gorm:"not null;unique_index"`
+}
+
 // UserDB is used to interact with the users database
 type UserDB interface {
 	// Methods for querying for single users
@@ -35,36 +45,41 @@ type UserDB interface {
 	FullReset() error
 }
 
-type User struct {
-	gorm.Model
-	Name         string `gorm:"index:user_name"`
-	Email        string `gorm:"not null;unique_index:user_email"`
-	Password     string `gorm:"-"`
-	PasswordHash string `gorm:"not null"`
-	Remember     string `gorm:"-"`
-	RememberHash string `gorm:"not null;unique_index"`
-}
-
-type UserService struct {
+// UserService is a set of methods used to manipulate and
+// work with the user model
+type UserService interface {
+	// Authenticate will verify the provided email address
+	// and password are correct
+	Authenticate(email, password string) (*User, error)
 	UserDB
 }
 
-type UserValidator struct {
+var _ UserDB = &userValidator{}
+
+type userValidator struct {
 	UserDB
 }
+
+var _ UserService = &userService{}
+
+type userService struct {
+	UserDB
+}
+
+var _ UserDB = &userGorm{}
 
 type userGorm struct {
 	db   *gorm.DB
 	hmac hash.HMAC
 }
 
-func NewUserService(env string) (*UserService, error) {
+func NewUserService(env string) (UserService, error) {
 	ug, err := NewUserGorm(env)
 	if err != nil {
 		return nil, err
 	}
 
-	return &UserService{
+	return &userService{
 		ug,
 	}, nil
 }
@@ -75,11 +90,9 @@ func NewUserGorm(env string) (*userGorm, error) {
 		fmt.Println("UserService error")
 	}
 
-	hmac := hash.NewHMAC(hmacSecretKey)
-
 	return &userGorm{
 		db:   db.Conn,
-		hmac: hmac,
+		hmac: hash.NewHMAC(hmacSecretKey),
 	}, nil
 }
 
@@ -123,7 +136,7 @@ func (ug *userGorm) ByRemember(token string) (*User, error) {
 	return &user, nil
 }
 
-func (us *UserService) Authenticate(email, password string) (*User, error) {
+func (us *userService) Authenticate(email, password string) (*User, error) {
 	foundUser, err := us.ByEmail(email)
 	if err != nil {
 		return nil, err
@@ -202,4 +215,12 @@ func (ug *userGorm) AutoMigrate() error {
 	}
 
 	return nil
+}
+
+func (ug *userGorm) Close() error {
+
+	if err := ug.db.Close(); err != nil {
+		return err
+	}
+
 }

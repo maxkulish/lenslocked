@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer us.DB.Close()
+	defer us.Close()
 
 	//err = us.FullReset()
 	err = us.AutoMigrate()
