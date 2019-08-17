@@ -20,6 +20,10 @@ var (
 	ErrNotFound    = errors.New("models: resource not found")
 	ErrInvalidID   = errors.New("models: ID provided was invalid")
 	ErrInvalidPass = errors.New("models: incorrect password provided")
+
+	// ErrEmailTaken is returned when an update or create is attempted
+	// with an email address that is already in use
+	ErrEmailTaken = errors.New("models: email address is already taken")
 )
 
 type Config struct {

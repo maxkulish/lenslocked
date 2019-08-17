@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -8,12 +9,22 @@ import (
 	"lenslocked/database"
 	"lenslocked/hash"
 	"lenslocked/rand"
+	"regexp"
 	"strings"
 )
 
 const (
 	userPWPepper  = "k$cUXbp!WY&vfGyhY64#UdeGesqz"
 	hmacSecretKey = "ujY4n%wnUBD#cAyQh4VXqJk*imr"
+)
+
+var (
+	// ErrEmailRequited is returned when an email address is not provided
+	ErrEmailRequited = errors.New("email address is required")
+
+	// ErrEmailInvalid is returned when an email address provided
+	// does not match any of our requirements
+	ErrEmailInvalid = errors.New("email address is not valid")
 )
 
 type User struct {
@@ -63,10 +74,7 @@ func NewUserService(env string) (UserService, error) {
 
 	hmac := hash.NewHMAC(hmacSecretKey)
 
-	uv := &userValidator{
-		UserDB: ug,
-		hmac:   hmac,
-	}
+	uv := newUserValidator(ug, hmac)
 
 	return &userService{
 		uv,
@@ -105,9 +113,18 @@ func runUserValFuncs(user *User, fns ...userValFunc) error {
 
 var _ UserDB = &userValidator{}
 
+func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
+	return &userValidator{
+		UserDB:     udb,
+		hmac:       hmac,
+		emailRegex: regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+.[a-z]{2,16}$`),
+	}
+}
+
 type userValidator struct {
 	UserDB
-	hmac hash.HMAC
+	hmac       hash.HMAC
+	emailRegex *regexp.Regexp
 }
 
 func (uv *userValidator) ByEmail(email string) (*User, error) {
@@ -151,7 +168,9 @@ func (uv *userValidator) Create(user *User) error {
 		uv.bcryptPass,
 		uv.setRememberIfUnset,
 		uv.hmacRemember,
-		uv.normalizeEmail)
+		uv.normalizeEmail,
+		uv.requireEmail,
+		uv.emailFormat)
 	if err != nil {
 		return err
 	}
@@ -211,7 +230,8 @@ func (uv *userValidator) Update(user *User) error {
 	err := runUserValFuncs(user,
 		uv.bcryptPass,
 		uv.hmacRemember,
-		uv.normalizeEmail)
+		uv.normalizeEmail,
+		uv.emailFormat)
 	if err != nil {
 		return err
 	}
@@ -244,6 +264,44 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 	user.Email = strings.ToLower(user.Email)
 	user.Email = strings.TrimSpace(user.Email)
 	return nil
+}
+
+func (uv *userValidator) requireEmail(user *User) error {
+	if user.Email == "" {
+		return ErrEmailRequited
+	}
+
+	return nil
+}
+
+func (uv *userValidator) emailFormat(user *User) error {
+	if user.Email == "" {
+		return nil
+	}
+	if !uv.emailRegex.MatchString(user.Email) {
+		return ErrEmailInvalid
+	}
+
+	return nil
+}
+
+func (uv *userValidator) emailIsAvail(user *User) error {
+	exist, err := uv.ByEmail(user.Email)
+	if err == database.ErrNotFound {
+		// Email address is not taken
+		return nil
+	}
+
+	if err != nil {
+		return err
+	}
+
+	// We found a user with this email address
+	// If the found user has the same ID as this user, it is
+	// an update and this is the same user
+	if user.ID != exist.ID {
+		return database.ErrEmailTaken
+	}
 }
 
 type userService struct {
