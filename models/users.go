@@ -54,6 +54,43 @@ type UserService interface {
 	UserDB
 }
 
+func NewUserService(env string) (UserService, error) {
+	ug, err := NewUserGorm(env)
+	if err != nil {
+		return nil, err
+	}
+
+	hmac := hash.NewHMAC(hmacSecretKey)
+
+	uv := &userValidator{
+		UserDB: ug,
+		hmac:   hmac,
+	}
+
+	return &userService{
+		uv,
+	}, nil
+}
+
+func (us *userService) Authenticate(email, password string) (*User, error) {
+	foundUser, err := us.ByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+userPWPepper))
+	if err != nil {
+		switch err {
+		case bcrypt.ErrMismatchedHashAndPassword:
+			return nil, database.ErrInvalidPass
+		default:
+			return nil, err
+		}
+	}
+
+	return foundUser, nil
+}
+
 type userValFunc func(*User) error
 
 func runUserValFuncs(user *User, fns ...userValFunc) error {
@@ -75,15 +112,18 @@ type userValidator struct {
 // ByRemember will hash the remember token and then call
 // ByRemember on the subsequent UserDB layer
 func (uv *userValidator) ByRemember(token string) (*User, error) {
-	hashedToken := uv.hmac.Hash(token)
-	return uv.UserDB.ByRemember(hashedToken)
+	user := User{
+		Remember: token,
+	}
+
+	if err := runUserValFuncs(&user, uv.hmacRemember); err != nil {
+		return nil, err
+	}
+
+	return uv.UserDB.ByRemember(user.RememberHash)
 }
 
 func (uv *userValidator) Create(user *User) error {
-
-	if err := runUserValFuncs(user, uv.bcryptPass); err != nil {
-		return err
-	}
 
 	if user.Remember == "" {
 		token, err := rand.RememberToken()
@@ -93,12 +133,16 @@ func (uv *userValidator) Create(user *User) error {
 		user.Remember = token
 	}
 
+	if err := runUserValFuncs(user, uv.bcryptPass); err != nil {
+		return err
+	}
+
 	user.RememberHash = uv.hmac.Hash(user.Remember)
 
 	return uv.UserDB.Create(user)
 }
 
-// bcryptPass will has a user's password with a
+// bcryptPass will hash a user's password with a
 // predefined pepper (userPwPepper) and bcypt if the
 // Password field is not the empty string
 func (uv *userValidator) bcryptPass(user *User) error {
@@ -120,11 +164,22 @@ func (uv *userValidator) bcryptPass(user *User) error {
 	return nil
 }
 
+func (uv *userValidator) hmacRemember(user *User) error {
+
+	if user.Remember == "" {
+		return nil
+	}
+
+	user.RememberHash = uv.hmac.Hash(user.Remember)
+	return nil
+}
+
 // Update will hash a remember token if it is provided
 func (uv *userValidator) Update(user *User) error {
 
-	if user.Remember != "" {
-		user.RememberHash = uv.hmac.Hash(user.Remember)
+	err := runUserValFuncs(user, uv.bcryptPass, uv.hmacRemember)
+	if err != nil {
+		return err
 	}
 
 	return uv.UserDB.Update(user)
@@ -137,8 +192,6 @@ func (uv *userValidator) Delete(id uint) error {
 	return uv.UserDB.Delete(id)
 }
 
-var _ UserService = &userService{}
-
 type userService struct {
 	UserDB
 }
@@ -147,24 +200,6 @@ var _ UserDB = &userGorm{}
 
 type userGorm struct {
 	db *gorm.DB
-}
-
-func NewUserService(env string) (UserService, error) {
-	ug, err := NewUserGorm(env)
-	if err != nil {
-		return nil, err
-	}
-
-	hmac := hash.NewHMAC(hmacSecretKey)
-
-	uv := &userValidator{
-		UserDB: ug,
-		hmac:   hmac,
-	}
-
-	return &userService{
-		uv,
-	}, nil
 }
 
 func NewUserGorm(env string) (*userGorm, error) {
@@ -215,25 +250,6 @@ func (ug *userGorm) ByRemember(hashedToken string) (*User, error) {
 	}
 
 	return &user, nil
-}
-
-func (us *userService) Authenticate(email, password string) (*User, error) {
-	foundUser, err := us.ByEmail(email)
-	if err != nil {
-		return nil, err
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password+userPWPepper))
-	if err != nil {
-		switch err {
-		case bcrypt.ErrMismatchedHashAndPassword:
-			return nil, database.ErrInvalidPass
-		default:
-			return nil, err
-		}
-	}
-
-	return foundUser, nil
 }
 
 // Create will create the provided user
