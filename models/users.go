@@ -117,7 +117,7 @@ func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
 	return &userValidator{
 		UserDB:     udb,
 		hmac:       hmac,
-		emailRegex: regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+.[a-z]{2,16}$`),
+		emailRegex: regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
 	}
 }
 
@@ -302,6 +302,8 @@ func (uv *userValidator) emailIsAvail(user *User) error {
 	if user.ID != exist.ID {
 		return database.ErrEmailTaken
 	}
+
+	return nil
 }
 
 type userService struct {
