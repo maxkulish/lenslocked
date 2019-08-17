@@ -8,6 +8,7 @@ import (
 	"lenslocked/database"
 	"lenslocked/hash"
 	"lenslocked/rand"
+	"strings"
 )
 
 const (
@@ -109,6 +110,19 @@ type userValidator struct {
 	hmac hash.HMAC
 }
 
+func (uv *userValidator) ByEmail(email string) (*User, error) {
+	user := User{
+		Email: email,
+	}
+
+	err := runUserValFuncs(&user, uv.normalizeEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	return uv.UserDB.ByEmail(user.Email)
+}
+
 // ByRemember will hash the remember token and then call
 // ByRemember on the subsequent UserDB layer
 func (uv *userValidator) ByRemember(token string) (*User, error) {
@@ -136,7 +150,8 @@ func (uv *userValidator) Create(user *User) error {
 	err := runUserValFuncs(user,
 		uv.bcryptPass,
 		uv.setRememberIfUnset,
-		uv.hmacRemember)
+		uv.hmacRemember,
+		uv.normalizeEmail)
 	if err != nil {
 		return err
 	}
@@ -193,7 +208,10 @@ func (uv *userValidator) setRememberIfUnset(user *User) error {
 // Update will hash a remember token if it is provided
 func (uv *userValidator) Update(user *User) error {
 
-	err := runUserValFuncs(user, uv.bcryptPass, uv.hmacRemember)
+	err := runUserValFuncs(user,
+		uv.bcryptPass,
+		uv.hmacRemember,
+		uv.normalizeEmail)
 	if err != nil {
 		return err
 	}
@@ -220,6 +238,12 @@ func (uv *userValidator) idGreaterThan(n uint) userValFunc {
 		}
 		return nil
 	})
+}
+
+func (uv *userValidator) normalizeEmail(user *User) error {
+	user.Email = strings.ToLower(user.Email)
+	user.Email = strings.TrimSpace(user.Email)
+	return nil
 }
 
 type userService struct {
