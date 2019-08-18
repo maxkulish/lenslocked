@@ -32,6 +32,13 @@ var (
 
 	// ErrPasswordRequired is returned when an user password field is not provided
 	ErrPasswordRequired = errors.New("password is required")
+
+	// ErrRememberTooShort is returned when a remember token is
+	// not at least 32 bytes
+	ErrRememberTooShort = errors.New("remember token must be at least 32 bytes")
+
+	// ErrRememberRequired
+	ErrRememberRequired = errors.New("remember hash is required")
 )
 
 type User struct {
@@ -177,7 +184,9 @@ func (uv *userValidator) Create(user *User) error {
 		uv.bcryptPass,
 		uv.passwordHashRequired,
 		uv.setRememberIfUnset,
+		uv.rememberMinBytes,
 		uv.hmacRemember,
+		uv.rememberHashRequired,
 		uv.emailNormalizer,
 		uv.emailRequired,
 		uv.emailFormat)
@@ -262,14 +271,46 @@ func (uv *userValidator) setRememberIfUnset(user *User) error {
 	return nil
 }
 
+func (uv *userValidator) rememberMinBytes(user *User) error {
+	if user.Remember == "" {
+		return nil
+	}
+
+	n, err := rand.NBytes(user.Remember)
+	if err != nil {
+		return err
+	}
+
+	if n < 32 {
+		return ErrRememberTooShort
+	}
+
+	return nil
+}
+
+func (uv *userValidator) rememberHashRequired(user *User) error {
+	if user.RememberHash == "" {
+		return ErrRememberRequired
+	}
+
+	return nil
+}
+
 // Update will hash a remember token if it is provided
 func (uv *userValidator) Update(user *User) error {
 
 	err := runUserValFuncs(user,
+		uv.passwordRequired,
+		uv.passwordMinLenght,
 		uv.bcryptPass,
+		uv.passwordHashRequired,
+		uv.rememberMinBytes,
 		uv.hmacRemember,
+		uv.rememberHashRequired,
 		uv.emailNormalizer,
-		uv.emailFormat)
+		uv.emailRequired,
+		uv.emailFormat,
+		uv.emailIsAvail)
 	if err != nil {
 		return err
 	}
