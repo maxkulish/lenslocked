@@ -25,6 +25,13 @@ var (
 	// ErrEmailInvalid is returned when an email address provided
 	// does not match any of our requirements
 	ErrEmailInvalid = errors.New("email address is not valid")
+
+	// ErrPasswordTooShort is returned when an update or create is
+	// attempted with a user password that is less than 8 characters
+	ErrPasswordTooShort = errors.New("password must be at least 8 characters")
+
+	// ErrPasswordRequired is returned when an user password field is not provided
+	ErrPasswordRequired = errors.New("password is required")
 )
 
 type User struct {
@@ -91,7 +98,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	if err != nil {
 		switch err {
 		case bcrypt.ErrMismatchedHashAndPassword:
-			return nil, database.ErrInvalidPass
+			return nil, database.ErrPasswordIncorrect
 		default:
 			return nil, err
 		}
@@ -132,7 +139,7 @@ func (uv *userValidator) ByEmail(email string) (*User, error) {
 		Email: email,
 	}
 
-	err := runUserValFuncs(&user, uv.normalizeEmail)
+	err := runUserValFuncs(&user, uv.emailNormalizer)
 	if err != nil {
 		return nil, err
 	}
@@ -165,11 +172,14 @@ func (uv *userValidator) Create(user *User) error {
 	}
 
 	err := runUserValFuncs(user,
+		uv.passwordRequired,
+		uv.passwordMinLenght,
 		uv.bcryptPass,
+		uv.passwordHashRequired,
 		uv.setRememberIfUnset,
 		uv.hmacRemember,
-		uv.normalizeEmail,
-		uv.requireEmail,
+		uv.emailNormalizer,
+		uv.emailRequired,
 		uv.emailFormat)
 	if err != nil {
 		return err
@@ -196,6 +206,34 @@ func (uv *userValidator) bcryptPass(user *User) error {
 	user.PasswordHash = string(hashedBytes)
 	// Clear raw password from log, memory etc.
 	user.Password = ""
+
+	return nil
+}
+
+func (uv *userValidator) passwordMinLenght(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+
+	if len(user.Password) < 8 {
+		return ErrPasswordTooShort
+	}
+
+	return nil
+}
+
+func (uv *userValidator) passwordRequired(user *User) error {
+	if user.Password == "" {
+		return ErrPasswordRequired
+	}
+
+	return nil
+}
+
+func (uv *userValidator) passwordHashRequired(user *User) error {
+	if user.PasswordHash == "" {
+		return ErrPasswordRequired
+	}
 
 	return nil
 }
@@ -230,7 +268,7 @@ func (uv *userValidator) Update(user *User) error {
 	err := runUserValFuncs(user,
 		uv.bcryptPass,
 		uv.hmacRemember,
-		uv.normalizeEmail,
+		uv.emailNormalizer,
 		uv.emailFormat)
 	if err != nil {
 		return err
@@ -260,13 +298,13 @@ func (uv *userValidator) idGreaterThan(n uint) userValFunc {
 	})
 }
 
-func (uv *userValidator) normalizeEmail(user *User) error {
+func (uv *userValidator) emailNormalizer(user *User) error {
 	user.Email = strings.ToLower(user.Email)
 	user.Email = strings.TrimSpace(user.Email)
 	return nil
 }
 
-func (uv *userValidator) requireEmail(user *User) error {
+func (uv *userValidator) emailRequired(user *User) error {
 	if user.Email == "" {
 		return ErrEmailRequited
 	}
