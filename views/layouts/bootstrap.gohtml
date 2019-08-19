@@ -14,8 +14,10 @@
   <body>
     {{template "navbar"}}
       <div class="container">
-        {{template "alert" .}}
-        {{template "body" .}}
+        {{if .Alert}}
+          {{template "alert" .Alert}}
+        {{end}}
+        {{template "body" .Body}}
 
         {{template "footer"}}
       </div>
