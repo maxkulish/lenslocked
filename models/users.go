@@ -189,7 +189,8 @@ func (uv *userValidator) Create(user *User) error {
 		uv.rememberHashRequired,
 		uv.emailNormalizer,
 		uv.emailRequired,
-		uv.emailFormat)
+		uv.emailFormat,
+		uv.emailIsAvail)
 	if err != nil {
 		return err
 	}
