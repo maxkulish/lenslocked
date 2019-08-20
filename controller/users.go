@@ -36,11 +36,12 @@ func NewUser(us models.UserService) *Users {
 	}
 }
 
+// New is used to render the form where a user can
+// create a new user account.
+//
+// GET /signup
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-
-	if err := u.NewView.Render(w, nil); err != nil {
-		panic(err)
-	}
+	u.NewView.Render(w, nil)
 }
 
 // This is used to process sign up form when a user tries
@@ -55,7 +56,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(r, &form); err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		_ = u.NewView.Render(w, vd)
+		u.NewView.Render(w, vd)
 		return
 	}
 
@@ -66,7 +67,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := u.us.Create(&user); err != nil {
 		vd.SetAlert(err)
-		_ = u.NewView.Render(w, vd)
+		u.NewView.Render(w, vd)
 		return
 	}
 
@@ -90,7 +91,7 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(r, &form); err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		_ = u.NewView.Render(w, vd)
+		u.NewView.Render(w, vd)
 		return
 	}
 
@@ -105,14 +106,14 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		default:
 			vd.SetAlert(err)
 		}
-		_ = u.LoginView.Render(w, vd)
+		u.LoginView.Render(w, vd)
 		return
 	}
 
 	err = u.signIn(w, user)
 	if err != nil {
 		vd.SetAlert(err)
-		_ = u.LoginView.Render(w, vd)
+		u.LoginView.Render(w, vd)
 		return
 	}
 
