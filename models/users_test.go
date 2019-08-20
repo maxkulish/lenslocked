@@ -7,15 +7,14 @@ import (
 
 const env = "test"
 
-func testingUserService() (*UserService, error) {
+func testingUserService() (UserService, error) {
 	us, err := NewUserService(env)
 	if err != nil {
 		return nil, err
 	}
-	us.DB.LogMode(false)
 
 	err = us.FullReset()
-	us.DB.AutoMigrate(&User{})
+	_ = us.AutoMigrate()
 	return us, err
 }
 
