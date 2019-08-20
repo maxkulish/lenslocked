@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	confPath = "/Users/mk/Code/lenslocked/config.yaml"
+	confPath = "./config.yaml"
 	dialect  = "postgres"
 )
 

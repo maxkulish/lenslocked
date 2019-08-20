@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -16,29 +15,6 @@ import (
 const (
 	userPWPepper  = "k$cUXbp!WY&vfGyhY64#UdeGesqz"
 	hmacSecretKey = "ujY4n%wnUBD#cAyQh4VXqJk*imr"
-)
-
-var (
-	// ErrEmailRequited is returned when an email address is not provided
-	ErrEmailRequited = errors.New("email address is required")
-
-	// ErrEmailInvalid is returned when an email address provided
-	// does not match any of our requirements
-	ErrEmailInvalid = errors.New("email address is not valid")
-
-	// ErrPasswordTooShort is returned when an update or create is
-	// attempted with a user password that is less than 8 characters
-	ErrPasswordTooShort = errors.New("password must be at least 8 characters")
-
-	// ErrPasswordRequired is returned when an user password field is not provided
-	ErrPasswordRequired = errors.New("password is required")
-
-	// ErrRememberTooShort is returned when a remember token is
-	// not at least 32 bytes
-	ErrRememberTooShort = errors.New("remember token must be at least 32 bytes")
-
-	// ErrRememberRequired
-	ErrRememberRequired = errors.New("remember hash is required")
 )
 
 type User struct {
