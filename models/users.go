@@ -277,7 +277,6 @@ func (uv *userValidator) rememberHashRequired(user *User) error {
 func (uv *userValidator) Update(user *User) error {
 
 	err := runUserValFuncs(user,
-		uv.passwordRequired,
 		uv.passwordMinLenght,
 		uv.bcryptPass,
 		uv.passwordHashRequired,

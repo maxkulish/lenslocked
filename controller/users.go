@@ -84,9 +84,14 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 // password and then log the user in if they are correct
 // POST /login
 func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
+
+	var vd views.Data
 	var form LoginForm
 	if err := parseForm(r, &form); err != nil {
-		panic(err)
+		log.Println(err)
+		vd.SetAlert(err)
+		_ = u.NewView.Render(w, vd)
+		return
 	}
 
 	user, err := u.us.Authenticate(form.Email, form.Pass)
@@ -94,18 +99,20 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch err {
 		case database.ErrNotFound:
-			_, _ = fmt.Fprintln(w, "Invalid email address.")
+			vd.AlertError("Invalid email address")
 		case database.ErrPasswordIncorrect:
-			_, _ = fmt.Fprintln(w, "Invalid password provided")
+			vd.AlertError("Invalid password provided")
 		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			vd.SetAlert(err)
 		}
+		_ = u.LoginView.Render(w, vd)
 		return
 	}
 
 	err = u.signIn(w, user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		vd.SetAlert(err)
+		_ = u.LoginView.Render(w, vd)
 		return
 	}
 

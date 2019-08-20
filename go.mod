@@ -7,6 +7,7 @@ require (
 	github.com/denisenkom/go-mssqldb v0.0.0-20190806190131-db2462fef53b // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
+	github.com/gorilla/csrf v1.6.0
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/schema v1.1.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
