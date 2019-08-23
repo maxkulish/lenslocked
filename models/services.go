@@ -13,8 +13,9 @@ func NewServices(env string) (*Services, error) {
 	}
 	db.Conn.LogMode(true)
 	return &Services{
-		User: NewUserService(db.Conn),
-		db:   db.Conn,
+		User:    NewUserService(db.Conn),
+		Gallery: NewGalleryService(db.Conn),
+		db:      db.Conn,
 	}, nil
 }
 
