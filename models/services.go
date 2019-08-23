@@ -31,15 +31,12 @@ func (s *Services) FullReset() error {
 	if err != nil {
 		return err
 	}
-	if err := s.db.DropTableIfExists(&User{}).Error; err != nil {
-		return err
-	}
 	return s.AutoMigrate()
 }
 
 // AutoMigrate will attempt to automatically migrate the all tables
 func (s *Services) AutoMigrate() error {
-	return s.db.AutoMigrate(&User{}).Error
+	return s.db.AutoMigrate(&User{}, &Gallery{}).Error
 }
 
 // Closes the database connection
