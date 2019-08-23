@@ -1,0 +1,10 @@
+{{define "galleryForm"}}
+<form action="/galleries" method="POST">
+  <div class="form-group">
+    <label for="Name">Title</label>
+    <input type="text" name="title" class="form-control" id="title" aria-describedby="nameHelp" placeholder="What is the title of your gallery">
+    <small id="nameHelp" class="form-text text-muted">Create name for your gallery</small>
+  </div>
+  <button type="submit" class="btn btn-primary">Create</button>
+</form>
+{{end}}
