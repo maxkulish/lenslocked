@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"golang.org/x/crypto/bcrypt"
@@ -56,11 +55,9 @@ type UserService interface {
 	UserDB
 }
 
-func NewUserService(env string) (UserService, error) {
-	ug, err := NewUserGorm(env)
-	if err != nil {
-		return nil, err
-	}
+func NewUserService(db *gorm.DB) UserService {
+
+	ug := &userGorm{db}
 
 	hmac := hash.NewHMAC(hmacSecretKey)
 
@@ -68,7 +65,7 @@ func NewUserService(env string) (UserService, error) {
 
 	return &userService{
 		uv,
-	}, nil
+	}
 }
 
 func (us *userService) Authenticate(email, password string) (*User, error) {
@@ -369,17 +366,6 @@ var _ UserDB = &userGorm{}
 
 type userGorm struct {
 	db *gorm.DB
-}
-
-func NewUserGorm(env string) (*userGorm, error) {
-	db, err := database.NewDBConn(env)
-	if err != nil {
-		fmt.Println("UserService error")
-	}
-
-	return &userGorm{
-		db: db.Conn,
-	}, nil
 }
 
 // ByID will look up user by the id

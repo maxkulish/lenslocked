@@ -18,20 +18,21 @@ func notFound404(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	us, err := models.NewUserService(env)
+	services, err := models.NewServices(env)
 	if err != nil {
 		panic(err)
 	}
-	defer us.Close()
+	// TODO: Fix this
+	//defer us.Close()
 
 	//err = us.FullReset()
-	err = us.AutoMigrate()
-	if err != nil {
-		panic(err)
-	}
+	//err = us.AutoMigrate()
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	staticC := controller.NewStatic()
-	usersC := controller.NewUser(us)
+	usersC := controller.NewUser(services.User)
 
 	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")

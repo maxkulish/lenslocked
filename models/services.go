@@ -11,7 +11,9 @@ func NewServices(env string) (*Services, error) {
 		fmt.Println("UserService error")
 	}
 	db.Conn.LogMode(true)
-	return &Services{}, nil
+	return &Services{
+		User: NewUserService(db.Conn),
+	}, nil
 }
 
 type Services struct {
