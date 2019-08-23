@@ -22,14 +22,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// TODO: Fix this
-	//defer us.Close()
 
-	//err = us.FullReset()
-	//err = us.AutoMigrate()
-	//if err != nil {
-	//	panic(err)
-	//}
+	defer services.Close()
+	_ = services.AutoMigrate()
+
+	// Reset all tables
+	//_ = services.FullReset()
 
 	staticC := controller.NewStatic()
 	usersC := controller.NewUser(services.User)
