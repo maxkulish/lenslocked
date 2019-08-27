@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"lenslocked/controller"
+	"lenslocked/middleware"
 	"lenslocked/models"
 	"net/http"
 
@@ -33,6 +34,10 @@ func main() {
 	usersC := controller.NewUser(services.User)
 	galleriesC := controller.NewGalleries(services.Gallery)
 
+	requireUserMW := middleware.RequireUser{
+		UserService: services.User,
+	}
+
 	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
@@ -43,7 +48,8 @@ func main() {
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 
 	// Gallery routes
-	r.Handle("/galleries/new", galleriesC.New).Methods("GET")
+	galleryNew := requireUserMW.Apply(galleriesC.New)
+	r.Handle("/galleries/new", galleryNew).Methods("GET")
 	r.HandleFunc("/galleries", galleriesC.Create).Methods("POST")
 
 	fmt.Println("Starting the server on :3000")
