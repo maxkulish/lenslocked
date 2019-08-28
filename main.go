@@ -48,9 +48,8 @@ func main() {
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
 
 	// Gallery routes
-	galleryNew := requireUserMW.Apply(galleriesC.New)
-	r.Handle("/galleries/new", galleryNew).Methods("GET")
-	r.HandleFunc("/galleries", galleriesC.Create).Methods("POST")
+	r.Handle("/galleries/new", requireUserMW.Apply(galleriesC.New)).Methods("GET")
+	r.HandleFunc("/galleries", requireUserMW.ApplyFn(galleriesC.Create)).Methods("POST")
 
 	fmt.Println("Starting the server on :3000")
 

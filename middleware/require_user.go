@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"fmt"
+	"lenslocked/contextd"
 	"lenslocked/models"
 	"net/http"
 )
@@ -30,7 +30,9 @@ func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		fmt.Println("User found:", user)
+		ctx := r.Context()
+		ctx = contextd.WithUser(ctx, user)
+		r = r.WithContext(ctx)
 
 		next(w, r)
 	})
