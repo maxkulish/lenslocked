@@ -1,6 +1,9 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+	"lenslocked/database"
+)
 
 // Gallery is our image container resources that
 // visitor view
@@ -15,6 +18,7 @@ type GalleryService interface {
 }
 
 type GalleryDB interface {
+	ByID(id uint) (*Gallery, error)
 	Create(gallery *Gallery) error
 }
 
@@ -61,6 +65,15 @@ func (gv *galleryValidator) titleRequired(g *Gallery) error {
 
 type galleryGorm struct {
 	db *gorm.DB
+}
+
+func (gg *galleryGorm) ByID(id uint) (*Gallery, error) {
+	var gallery Gallery
+	db := gg.db.Where("id = ?", id).First(&gallery)
+
+	err := database.HandleDBError(db)
+	return &gallery, err
+
 }
 
 func (gg *galleryGorm) Create(gallery *Gallery) error {

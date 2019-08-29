@@ -15,6 +15,7 @@ var (
 	ErrPasswordRequired modelError = "password is required"
 	// ErrTitleRequired
 	ErrTitleRequired modelError = "models: title is required"
+	ErrNotFound      modelError = "models: not found id DB"
 
 	// Private Errors
 	// ErrRememberTooShort is returned when a remember token is

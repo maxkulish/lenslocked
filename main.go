@@ -30,15 +30,15 @@ func main() {
 	// Reset all tables
 	//_ = services.FullReset()
 
+	r := mux.NewRouter()
 	staticC := controller.NewStatic()
 	usersC := controller.NewUser(services.User)
-	galleriesC := controller.NewGalleries(services.Gallery)
+	galleriesC := controller.NewGalleries(services.Gallery, r)
 
 	requireUserMW := middleware.RequireUser{
 		UserService: services.User,
 	}
 
-	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
 	r.HandleFunc("/signup", usersC.New).Methods("GET")
@@ -50,6 +50,9 @@ func main() {
 	// Gallery routes
 	r.Handle("/galleries/new", requireUserMW.Apply(galleriesC.New)).Methods("GET")
 	r.HandleFunc("/galleries", requireUserMW.ApplyFn(galleriesC.Create)).Methods("POST")
+	r.HandleFunc("/galleries/{id:[0-9]+}", galleriesC.Show).
+		Methods("GET").
+		Name(controller.ShowGallery)
 
 	fmt.Println("Starting the server on :3000")
 
