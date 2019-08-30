@@ -14,12 +14,6 @@ const (
 	dialect  = "postgres"
 )
 
-var (
-// ErrNotFound is returned when a resource cannot be found
-// in the database
-
-)
-
 type Config struct {
 	DB     DBInfo `yaml:"db"`
 	DBTest DBInfo `yaml:"dbtest"`
@@ -87,7 +81,7 @@ func NewDBConn(env string) (*DB, error) {
 func HandleDBError(db *gorm.DB) error {
 	err := db.Error
 	if err == gorm.ErrRecordNotFound {
-		return ErrNotFound
+		return errors.New("record not found")
 	}
 
 	return err

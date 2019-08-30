@@ -110,6 +110,34 @@ func (g *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 	g.EditView.Render(w, vd)
 }
 
+// GET /galleries/:id/delete
+func (g *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
+	gallery, err := g.galleryByID(w, r)
+	if err != nil {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+
+	// Check if user is owner of the gallery
+	user := contextd.User(r.Context())
+	if gallery.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+
+	var vd views.Data
+	err = g.gs.Delete(gallery.ID)
+	if err != nil {
+		vd.SetAlert(err)
+		vd.Body = gallery
+		g.EditView.Render(w, vd)
+		return
+	}
+	//TODO: redirect to index page
+
+	_, _ = fmt.Fprintln(w, "Successfully deleted")
+}
+
 func (g *Galleries) galleryByID(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
