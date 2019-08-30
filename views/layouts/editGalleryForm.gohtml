@@ -2,7 +2,9 @@
     <form action="/galleries/{{.ID}}/update" method="POST">
         <div class="form-group">
             <label for="title">Title</label>
-            <input type="text" name="title" class="form-control" id="title" aria-describedby="nameHelp" placeholder="What is the title of your gallery?" value="{{.Title}}">
+            <input type="text" name="title" class="form-control"
+                   id="title" aria-describedby="nameHelp" placeholder="What is the title of your gallery?"
+                   value="{{.Title}}">
             <small id="nameHelp" class="form-text text-muted">Create name for your gallery</small>
         </div>
         <button type="submit" class="btn btn-primary">Update</button>
