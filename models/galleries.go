@@ -73,7 +73,6 @@ func (gg *galleryGorm) ByID(id uint) (*Gallery, error) {
 
 	err := database.HandleDBError(db)
 	return &gallery, err
-
 }
 
 func (gg *galleryGorm) Create(gallery *Gallery) error {
