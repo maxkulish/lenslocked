@@ -14,8 +14,13 @@ var (
 	// ErrPasswordRequired is returned when an user password field is not provided
 	ErrPasswordRequired modelError = "password is required"
 	// ErrTitleRequired
-	ErrTitleRequired modelError = "models: title is required"
-	ErrNotFound      modelError = "models: not found id DB"
+	ErrTitleRequired     modelError = "models: title is required"
+	ErrNotFound          modelError = "models: not found id DB"
+	ErrInvalidID         modelError = "models: ID provided was invalid"
+	ErrPasswordIncorrect modelError = "models: incorrect password provided"
+	// ErrEmailTaken is returned when an update or create is attempted
+	// with an email address that is already in use
+	ErrEmailTaken modelError = "models: email address is already taken"
 
 	// Private Errors
 	// ErrRememberTooShort is returned when a remember token is

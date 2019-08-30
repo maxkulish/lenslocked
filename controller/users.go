@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"lenslocked/database"
 	"lenslocked/models"
 	"lenslocked/rand"
 	"lenslocked/views"
@@ -99,9 +98,9 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		switch err {
-		case database.ErrNotFound:
+		case models.ErrNotFound:
 			vd.AlertError("Invalid email address")
-		case database.ErrPasswordIncorrect:
+		case models.ErrPasswordIncorrect:
 			vd.AlertError("Invalid password provided")
 		default:
 			vd.SetAlert(err)

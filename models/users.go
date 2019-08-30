@@ -71,7 +71,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	if err != nil {
 		switch err {
 		case bcrypt.ErrMismatchedHashAndPassword:
-			return nil, database.ErrPasswordIncorrect
+			return nil, ErrPasswordIncorrect
 		default:
 			return nil, err
 		}
@@ -299,7 +299,7 @@ func (uv *userValidator) Delete(id uint) error {
 func (uv *userValidator) idGreaterThan(n uint) userValFunc {
 	return userValFunc(func(user *User) error {
 		if user.ID <= n {
-			return database.ErrInvalidID
+			return ErrInvalidID
 		}
 		return nil
 	})
@@ -332,7 +332,7 @@ func (uv *userValidator) emailFormat(user *User) error {
 
 func (uv *userValidator) emailIsAvail(user *User) error {
 	exist, err := uv.ByEmail(user.Email)
-	if err == database.ErrNotFound {
+	if err == ErrNotFound {
 		// Email address is not taken
 		return nil
 	}
@@ -345,7 +345,7 @@ func (uv *userValidator) emailIsAvail(user *User) error {
 	// If the found user has the same ID as this user, it is
 	// an update and this is the same user
 	if user.ID != exist.ID {
-		return database.ErrEmailTaken
+		return ErrEmailTaken
 	}
 
 	return nil
