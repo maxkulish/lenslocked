@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"html/template"
 	"io"
+	"lenslocked/contextd"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -21,21 +22,22 @@ type View struct {
 }
 
 // Render is userd to render the view with the predefined layout
-func (v *View) Render(w http.ResponseWriter, data interface{}) {
+func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) {
 	w.Header().Set("Content-Type", "text/html")
 
-	switch data.(type) {
+	var vd Data
+	switch d := data.(type) {
 	case Data:
-	// do nothing
+		vd = d
 	default:
-		data = Data{
-			Alert: nil,
-			Body:  data,
+		vd = Data{
+			Body: data,
 		}
 	}
 
+	vd.User = contextd.User(r.Context())
 	var buf bytes.Buffer
-	if err := v.Template.ExecuteTemplate(&buf, v.Layout, data); err != nil {
+	if err := v.Template.ExecuteTemplate(&buf, v.Layout, vd); err != nil {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
@@ -44,7 +46,7 @@ func (v *View) Render(w http.ResponseWriter, data interface{}) {
 }
 
 func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	v.Render(w, nil)
+	v.Render(w, r, nil)
 }
 
 func NewView(layout string, files ...string) *View {

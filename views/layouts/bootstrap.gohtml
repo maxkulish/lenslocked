@@ -12,7 +12,7 @@
     <title>LensLocked.com</title>
   </head>
   <body>
-    {{template "navbar"}}
+    {{template "navbar" .}}
       <div class="container">
         {{if .Alert}}
           {{template "alert" .Alert}}
