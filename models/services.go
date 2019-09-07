@@ -15,6 +15,7 @@ func NewServices(env string) (*Services, error) {
 	return &Services{
 		User:    NewUserService(db.Conn),
 		Gallery: NewGalleryService(db.Conn),
+		Image:   NewImageService(),
 		db:      db.Conn,
 	}, nil
 }
@@ -22,6 +23,7 @@ func NewServices(env string) (*Services, error) {
 type Services struct {
 	Gallery GalleryService
 	User    UserService
+	Image   ImageService
 	db      *gorm.DB
 }
 
