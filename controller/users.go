@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"lenslocked/models"
 	"lenslocked/rand"
 	"lenslocked/views"
@@ -76,8 +75,6 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/galleries", http.StatusFound)
-
-	_, _ = fmt.Fprintln(w, user)
 }
 
 // Login is used to verify the provided email adress and

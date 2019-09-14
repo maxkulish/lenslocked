@@ -1,6 +1,8 @@
 package views
 
-import "lenslocked/models"
+import (
+	"lenslocked/models"
+)
 
 const (
 	AlertLvlError   = "danger"
