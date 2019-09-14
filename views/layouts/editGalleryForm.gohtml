@@ -26,13 +26,17 @@
 {{end}}
 
 {{define "galleryImages"}}
-    <ul>
-        {{range .Images}}
-            <li>
-                {{.}}
-            </li>
+    <div class="row text-center text-lg-left">
+        {{range .ImagesSplitN 6}}
+            <div class="col-lg-2 col-md-4 col-6">
+                {{range .}}
+                    <a href="{{.}}" class="d-block mb-6">
+                        <img class="img-fluid img-thumbnail" src="{{.}}" alt="">
+                    </a>
+                {{end}}
+            </div>
         {{end}}
-    </ul>
+    </div>
 {{end}}
 
 {{define "uploadImageForm"}}

@@ -48,6 +48,10 @@ func main() {
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 
+	// image routes
+	imageHandler := http.FileServer(http.Dir("./images/"))
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", imageHandler))
+
 	// Gallery routes
 	r.Handle("/galleries/new", requireUserMW.Apply(galleriesC.New)).Methods("GET")
 	r.HandleFunc("/galleries", requireUserMW.ApplyFn(galleriesC.Index)).Methods("GET")

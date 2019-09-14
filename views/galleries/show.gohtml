@@ -4,14 +4,18 @@
             <h1>
                 {{.Title}}
             </h1>
-            <ul>
-                {{range .Images}}
-                    <li>
-                        {{.}}
-                    </li>
-                {{end}}
-            </ul>
-            <p>Images coming soon</p>
+            <hr>
         </div>
+    </div>
+    <div class="row text-center text-lg-left">
+        {{range .ImagesSplitN 4}}
+            <div class="col-lg-3 col-md-4 col-6">
+                {{range .}}
+                <a href="{{.}}" class="d-block mb-4">
+                    <img class="img-fluid img-thumbnail" src="{{.}}" alt="">
+                </a>
+                {{end}}
+            </div>
+        {{end}}
     </div>
 {{end}}
