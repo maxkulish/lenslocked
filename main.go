@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/csrf"
 	"lenslocked/controller"
 	"lenslocked/middleware"
 	"lenslocked/models"
+	"lenslocked/rand"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -40,6 +42,9 @@ func main() {
 	requireUserMW := middleware.RequireUser{
 		User: userMW,
 	}
+
+	bytes, _ := rand.Bytes(32)
+	csrfMW := csrf.Protect(bytes, csrf.Secure(false))
 
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
@@ -81,5 +86,5 @@ func main() {
 	handler404 := http.HandlerFunc(notFound404)
 	r.NotFoundHandler = handler404
 
-	_ = http.ListenAndServe(":3000", userMW.Apply(r))
+	_ = http.ListenAndServe(":3000", csrfMW(userMW.Apply(r)))
 }

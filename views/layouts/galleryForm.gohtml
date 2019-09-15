@@ -1,5 +1,6 @@
 {{define "galleryForm"}}
 <form action="/galleries" method="POST">
+  {{csrfField}}
   <div class="form-group">
     <label for="Name">Title</label>
     <input type="text" name="title" class="form-control" id="title" aria-describedby="nameHelp" placeholder="What is the title of your gallery">
